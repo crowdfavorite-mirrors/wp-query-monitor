@@ -24,7 +24,7 @@ class QM_Dispatcher_Headers extends QM_Dispatcher {
 
 	public function init() {
 
-		if ( ! $this->qm->user_can_view() ) {
+		if ( ! $this->user_can_view() ) {
 			return;
 		}
 
@@ -38,13 +38,7 @@ class QM_Dispatcher_Headers extends QM_Dispatcher {
 
 		require_once $this->qm->plugin_path( 'output/Headers.php' );
 
-		# Using DirectoryIterator rather than glob in order to support Google App Engine (tested on v1.9.10)
-		$output_iterator = new DirectoryIterator( $this->qm->plugin_path( 'output/headers' ) );
-		foreach ( $output_iterator as $output ) {
-			if ( $output->getExtension() === 'php' ) {
-				include $output->getPathname();
-			}
-		}
+		QM_Util::include_files( $this->qm->plugin_path( 'output/headers' ) );
 
 	}
 
@@ -57,13 +51,9 @@ class QM_Dispatcher_Headers extends QM_Dispatcher {
 
 	}
 
-	public function get_outputter( QM_Collector $collector ) {
-		return new QM_Output_Headers( $collector );
-	}
-
 	public function is_active() {
 
-		if ( ! $this->qm->user_can_view() ) {
+		if ( ! $this->user_can_view() ) {
 			return false;
 		}
 
@@ -83,4 +73,4 @@ function register_qm_dispatcher_headers( array $dispatchers, QM_Plugin $qm ) {
 	return $dispatchers;
 }
 
-add_filter( 'query_monitor_dispatchers', 'register_qm_dispatcher_headers', 10, 2 );
+add_filter( 'qm/dispatchers', 'register_qm_dispatcher_headers', 10, 2 );

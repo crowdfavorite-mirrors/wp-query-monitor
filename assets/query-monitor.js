@@ -115,10 +115,19 @@ jQuery( function($) {
 			tr     = table.find('tbody tr[data-qm-' + filter + ']'),
 			val    = $(this).val().replace(/[[\]()'"]/g, "\\$&"),
 			total  = tr.removeClass('qm-hide-' + filter).length,
+			hilite = $(this).attr('data-highlight'),
 			time   = 0;
 
-		if ( $(this).val() !== '' )
+		if ( hilite ) {
+			table.find('tr').removeClass('qm-highlight');
+		}
+
+		if ( $(this).val() !== '' ) {
+			if ( hilite ) {
+				tr.filter('[data-qm-'+hilite+'*="' + val + '"]').addClass('qm-highlight');
+			}
 			tr.not('[data-qm-' + filter + '*="' + val + '"]').addClass('qm-hide-' + filter);
+		}
 
 		var matches = tr.filter(':visible');
 		matches.each(function(i){
@@ -146,6 +155,28 @@ jQuery( function($) {
 				el.text(el.attr('data-off'));
 		});
 		e.preventDefault();
+	});
+
+	$('#qm').find('.qm-highlighter').on('mouseenter',function(e){
+
+		var subject = $(this).data('qm-highlight');
+		var table   = $(this).closest('table');
+
+		if ( !subject ) {
+			return;
+		}
+
+		$(this).addClass('qm-highlight');
+
+		$.each( subject.split(' '), function( i, el ){
+			table.find('tr[data-qm-subject="'+el+'"]').addClass('qm-highlight');
+		});
+
+	}).on('mouseleave',function(e){
+
+		$(this).removeClass('qm-highlight');
+		$(this).closest('table').find('tr').removeClass('qm-highlight');
+
 	});
 
 	$( document ).ajaxSuccess( function( event, response, options ) {
@@ -189,14 +220,24 @@ jQuery( function($) {
 
 	$('.qm-auth').on('click',function(e){
 		var action = $(this).data('action');
-		$.post(qm_l10n.ajaxurl,{
-			action : 'qm_auth_' + action,
-			nonce  : qm_l10n.auth_nonce[action]
-		},function(response){
-			alert( response.data );
+
+		$.ajax(qm_l10n.ajaxurl,{
+			type : 'POST',
+			data : {
+				action : 'qm_auth_' + action,
+				nonce  : qm_l10n.auth_nonce[action]
+			},
+			success : function(response){
+				alert( response.data );
+			},
+			dataType : 'json',
+			xhrFields: {
+				withCredentials: true
+			}
 		});
+
 		e.preventDefault();
-	})
+	});
 
 	$.qm.tableSort({target: $('.qm-sortable'), debug: false});
 

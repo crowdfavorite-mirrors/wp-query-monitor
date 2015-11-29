@@ -16,24 +16,24 @@ GNU General Public License for more details.
 
 class QM_Output_Headers_Redirects extends QM_Output_Headers {
 
-	public function output() {
+	public function get_output() {
 
 		$data = $this->collector->get_data();
+		$headers = array();
 
 		if ( empty( $data['trace'] ) ) {
-			return;
+			return array();
 		}
 
-		header( sprintf( 'X-QM-Redirect-Trace: %s',
-			implode( ', ', $data['trace']->get_stack() )
-		) );
+		$headers['Redirect-Trace'] = implode( ', ', $data['trace']->get_stack() );
+		return $headers;
 
 	}
 
 }
 
 function register_qm_output_headers_redirects( array $output, QM_Collectors $collectors ) {
-	if ( $collector = $collectors::get( 'redirects' ) ) {
+	if ( $collector = QM_Collectors::get( 'redirects' ) ) {
 		$output['redirects'] = new QM_Output_Headers_Redirects( $collector );
 	}
 	return $output;

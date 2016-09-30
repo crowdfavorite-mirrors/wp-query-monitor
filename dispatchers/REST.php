@@ -1,6 +1,6 @@
 <?php
 /*
-Copyright 2009-2015 John Blackbourn
+Copyright 2009-2016 John Blackbourn
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -56,7 +56,7 @@ class QM_Dispatcher_REST extends QM_Dispatcher {
 		require_once $this->qm->plugin_path( 'output/Headers.php' );
 
 		foreach ( glob( $this->qm->plugin_path( 'output/headers/*.php' ) ) as $file ) {
-			include $file;
+			include_once $file;
 		}
 	}
 
@@ -64,6 +64,10 @@ class QM_Dispatcher_REST extends QM_Dispatcher {
 
 		# If the headers have already been sent then we can't do anything about it
 		if ( headers_sent() ) {
+			return false;
+		}
+
+		if ( ! defined( 'REST_REQUEST' ) || ! REST_REQUEST ) {
 			return false;
 		}
 
